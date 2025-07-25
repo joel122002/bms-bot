@@ -1,4 +1,3 @@
-import requests
 import time
 import json
 import subprocess
@@ -21,20 +20,33 @@ def send_message(dateCode):
     else:
         print(f"Failed to send message for {dateCode}.")
 
+def get_nested_value(data, path):
+    """
+    Retrieves a value from a nested data structure by following a path of keys/indices.
+    
+    Args:
+        data: The nested data structure (dict, list, etc.) to traverse
+        path: A list of keys or indices to navigate through the nested structure
+        
+    Returns:
+        The value at the specified path or None if the path is invalid
+        
+    Example:
+        data = {"fruits": [{"label": {"carbohydrates": {"nutrition": 25}}}]}
+        get_nested_value(data, ["fruits", 0, "label", "carbohydrates", "nutrition"])
+        # Returns 25
+    """
+    current = data
+    
+    try:
+        for key in path:
+            current = current[key]
+        return current
+    except (KeyError, IndexError, TypeError):
+        return None
+
 def check_showtimes(dateCode):
-    curl_command = [
-        'curl', f'https://in.bookmyshow.com/api/v3/mobile/showtimes/byvenue?dateCode={dateCode}&venueCode=CSWO&regionCode=MUMBAI&memberId=&bmsId=1.719737512.1753069002002&appCode=WEBV2&token=26x3aab5x746514b3b7b&lsId=',
-        '-H', 'x-app-code: WEB',
-        '-H', 'sec-ch-ua-platform: "Windows"',
-        '-H', 'Referer: https://in.bookmyshow.com/cinemas/mumbai/cinepolis-nexus-seawoods-nerul-navi-mumbai/buytickets/CSWO/20250723',
-        '-H', 'sec-ch-ua: "Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
-        '-H', 'sec-ch-ua-mobile: ?0',
-        '-H', r'baggage: sentry-environment=production,sentry-release=release_3790,sentry-public_key=4d17a59c2597410e714ab31d421148d9,sentry-trace_id=c772da57d3e24166baf0370de27b060d,sentry-transaction=%2Fcinemas%2F%3AregionNameSlug%2F%3AvenueNameSlug%2Fbuytickets%2F%3AvenueCode%2F%3AshowDate%3F,sentry-sampled=false,sentry-sample_rand=0.09049261958270327,sentry-sample_rate=0.001',
-        '-H', 'sentry-trace: c772da57d3e24166baf0370de27b060d-b597d4ce72e895a9-0',
-        '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
-        '-H', 'Accept: application/json, text/plain, */*',
-        '-H', 'x-region-code: MUMBAI'
-    ]
+    curl_command = r"""curl 'https://api3.pvrcinemas.com/api/v1/booking/content/msessions'   -H 'accept: application/json, text/plain, */*'   -H 'accept-language: en-US,en;q=0.7'   -H 'appversion: 1.0'   -H 'authorization: Bearer'   -H 'cache-control: no-cache'   -H 'chain: PVR'   -H 'city: Navi Mumbai'   -H 'content-type: application/json'   -H 'country: INDIA'   -H 'origin: https://www.pvrcinemas.com'   -H 'platform: WEBSITE'   -H 'pragma: no-cache'   -H 'priority: u=1, i'   -H 'sec-ch-ua: "Not)A;Brand";v="8", "Chromium";v="138", "Brave";v="138"'   -H 'sec-ch-ua-mobile: ?0'   -H 'sec-ch-ua-platform: "Windows"'   -H 'sec-fetch-dest: empty'   -H 'sec-fetch-mode: cors'   -H 'sec-fetch-site: same-site'   -H 'sec-gpc: 1'   -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36'   --data-raw '{"city":"Navi Mumbai","mid":"31737","experience":"ALL","specialTag":"ALL","lat":"19.134393","lng":"72.831393","lang":"ALL","format":"ALL","dated":"2025-07-27","time":"08:00-24:00","cinetype":"ALL","hc":"ALL","adFree":false}'"""
 
     # Execute the curl command using subprocess
     try:
@@ -42,15 +54,12 @@ def check_showtimes(dateCode):
         print("Curl command executed successfully.", result.stdout)
         data = json.loads(result.stdout)
 
-        # Check if the response contains ShowDetails and compare the date
-        if 'ShowDetails' in data and len(data['ShowDetails']) > 0:
-            if data['ShowDetails'][0].get('Date') == dateCode:
-                print(f"DateCode {dateCode} matches! Sending message...")
-                send_message(dateCode)
-            else:
-                print(f"DateCode {dateCode} does not match.")
+        date = get_nested_value(data, ['ShowDetails', 0, 'Date'])
+        if date == dateCode:
+            print(f"DateCode {dateCode} matches! Sending message...")
+            send_message(dateCode)
         else:
-            print("No ShowDetails found in the response.")
+            print(f"DateCode {dateCode} does not match.")
     except subprocess.CalledProcessError as e:
         print(f"Failed to execute curl command. Error: {e}")
     except UnicodeDecodeError as e:
