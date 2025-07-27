@@ -69,7 +69,7 @@ def check_showtimes(dateCode):
 # Main loop that calls the API every 30 seconds
 def main():
     # Set your dateCode here
-    dateCode = "2025-07-27"  # You can modify this dynamically as per requirement
+    dateCode = "2025-07-29"  # You can modify this dynamically as per requirement
     
     while True:
         print(f"Checking showtimes for {dateCode}...")
