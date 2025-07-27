@@ -50,11 +50,11 @@ def check_showtimes(dateCode):
 
     # Execute the curl command using subprocess
     try:
-        result = subprocess.run(curl_command, capture_output=True, text=True, check=True, encoding='utf-8')
+        result = subprocess.run(curl_command, capture_output=True, text=True, check=True, encoding='utf-8', shell=True)
         print("Curl command executed successfully.", result.stdout)
         data = json.loads(result.stdout)
 
-        date = get_nested_value(data, ['ShowDetails', 0, 'Date'])
+        date = get_nested_value(data, ['output', 'movieCinemaSessions', 0, 'experienceSessions', 0, 'shows', 0, 'showDateStr'])
         if date == dateCode:
             print(f"DateCode {dateCode} matches! Sending message...")
             send_message(dateCode)
@@ -68,7 +68,7 @@ def check_showtimes(dateCode):
 # Main loop that calls the API every 30 seconds
 def main():
     # Set your dateCode here
-    dateCode = "20250723"  # You can modify this dynamically as per requirement
+    dateCode = "2025-07-27"  # You can modify this dynamically as per requirement
     
     while True:
         print(f"Checking showtimes for {dateCode}...")
