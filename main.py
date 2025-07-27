@@ -1,6 +1,7 @@
 import time
 import json
 import subprocess
+from string import Template
 
 # Function to send the message
 def send_message(dateCode):
@@ -46,8 +47,8 @@ def get_nested_value(data, path):
         return None
 
 def check_showtimes(dateCode):
-    curl_command = r"""curl 'https://api3.pvrcinemas.com/api/v1/booking/content/msessions'   -H 'accept: application/json, text/plain, */*'   -H 'accept-language: en-US,en;q=0.7'   -H 'appversion: 1.0'   -H 'authorization: Bearer'   -H 'cache-control: no-cache'   -H 'chain: PVR'   -H 'city: Navi Mumbai'   -H 'content-type: application/json'   -H 'country: INDIA'   -H 'origin: https://www.pvrcinemas.com'   -H 'platform: WEBSITE'   -H 'pragma: no-cache'   -H 'priority: u=1, i'   -H 'sec-ch-ua: "Not)A;Brand";v="8", "Chromium";v="138", "Brave";v="138"'   -H 'sec-ch-ua-mobile: ?0'   -H 'sec-ch-ua-platform: "Windows"'   -H 'sec-fetch-dest: empty'   -H 'sec-fetch-mode: cors'   -H 'sec-fetch-site: same-site'   -H 'sec-gpc: 1'   -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36'   --data-raw '{"city":"Navi Mumbai","mid":"31737","experience":"ALL","specialTag":"ALL","lat":"19.134393","lng":"72.831393","lang":"ALL","format":"ALL","dated":"2025-07-27","time":"08:00-24:00","cinetype":"ALL","hc":"ALL","adFree":false}'"""
-
+    curl_command_template = Template(r"""curl 'https://api3.pvrcinemas.com/api/v1/booking/content/msessions'   -H 'accept: application/json, text/plain, */*'   -H 'accept-language: en-US,en;q=0.7'   -H 'appversion: 1.0'   -H 'authorization: Bearer'   -H 'cache-control: no-cache'   -H 'chain: PVR'   -H 'city: Navi Mumbai'   -H 'content-type: application/json'   -H 'country: INDIA'   -H 'origin: https://www.pvrcinemas.com'   -H 'platform: WEBSITE'   -H 'pragma: no-cache'   -H 'priority: u=1, i'   -H 'sec-ch-ua: "Not)A;Brand";v="8", "Chromium";v="138", "Brave";v="138"'   -H 'sec-ch-ua-mobile: ?0'   -H 'sec-ch-ua-platform: "Windows"'   -H 'sec-fetch-dest: empty'   -H 'sec-fetch-mode: cors'   -H 'sec-fetch-site: same-site'   -H 'sec-gpc: 1'   -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36'   --data-raw '{"city":"Navi Mumbai","mid":"31737","experience":"ALL","specialTag":"ALL","lat":"19.134393","lng":"72.831393","lang":"ALL","format":"ALL","dated":"$date","time":"08:00-24:00","cinetype":"ALL","hc":"ALL","adFree":false}'""")
+    curl_command = curl_command_template.safe_substitute(date=dateCode)
     # Execute the curl command using subprocess
     try:
         result = subprocess.run(curl_command, capture_output=True, text=True, check=True, encoding='utf-8', shell=True)
