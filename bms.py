@@ -13,7 +13,7 @@ def check_showtimes(dateCode):
         print("Curl command executed successfully.", result.stdout)
         data = json.loads(result.stdout)
         movies = get_nested_value(data, ['ShowDetails', 0, 'Event'])
-        date = get_nested_value(data, ['ShowDetails', 0, 'Event'])
+        date = get_nested_value(data, ['ShowDetails', 0, 'Date'])
         names = extract_values_by_key(movies, "EventTitle")
         if contains_substring(names, "Fantastic") and date == dateCode:
             print(f"DateCode {dateCode} matches! Sending message...")
