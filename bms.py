@@ -22,7 +22,7 @@ def check_showtimes(dateCode):
         result = subprocess.run(curl_command, capture_output=True, text=True, check=True, encoding='utf-8', shell=True)
         print("Curl command executed successfully.", result.stdout)
         # Log the curl command output with timestamp
-        logger.info(f"CURL OUTPUT for dateCode {dateCode}: {result.stdout}")
+        logger.info(f"{result.stdout}")
         
         data = json.loads(result.stdout)
         movies = get_nested_value(data, ['ShowDetails', 0, 'Event'])
