@@ -1,4 +1,6 @@
 import requests
+import logging
+from logging.handlers import RotatingFileHandler
 
 # Function to send the message
 def send_message(dateCode):
@@ -116,3 +118,29 @@ def contains_substring(string_list, substring):
         return False
     
     return False
+
+def get_logger(name):
+    """
+    Returns a configured logger with rotating file handler to limit log size.
+    
+    Args:
+        name: The name of the logger and the log file (without .log extension)
+        
+    Returns:
+        A configured logger instance
+        
+    Example:
+        logger = get_logger('bms_bot')  # Creates a logger that writes to bms_bot.log
+    """
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    
+    # Check if logger already has handlers to avoid duplicates
+    if not logger.handlers:
+        # Rotate when log reaches 5MB, keep 3 backup files
+        handler = RotatingFileHandler(f'{name}.log', maxBytes=5*1024*1024, backupCount=3)
+        formatter = logging.Formatter('%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+    
+    return logger
