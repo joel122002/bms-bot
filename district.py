@@ -27,7 +27,7 @@ def check_showtimes(dateCode):
         data = json.loads(result.stdout)
         movies = get_nested_value(data, ['meta', 'movies'])
         names = extract_values_by_key(movies, "label")
-        if contains_substring(names, "Fantastic"):
+        if contains_substring(names, "Slayer"):
             message = f"DateCode {dateCode} matches! Sending message..."
             print(message)
             logger.info(message)

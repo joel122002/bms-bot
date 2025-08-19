@@ -1,1 +1,3 @@
 venv
+*.log
+commands.txt
