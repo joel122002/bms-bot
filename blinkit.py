@@ -18,7 +18,9 @@ def check_showtimes(dateCode):
         logger.info(f"{result.stdout}")
         
         data = json.loads(result.stdout)
-        stocks = get_nested_value(data, ['response', 'snippets', 7, 'data', 'inventory'])
+        # Using walrus operator (Python 3.8+)
+        stocks = (first_value := get_nested_value(data, ['response', 'snippets', 7, 'data', 'inventory'])) if first_value is not None else get_nested_value(data, ['response', 'snippets', 6, 'data', 'inventory'])
+        
         if stocks > 0:
             message = f"Carbona noodles are in stock! Sending message..."
             print(message)
