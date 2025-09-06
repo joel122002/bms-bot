@@ -37,6 +37,10 @@ def check_showtimes(dateCode):
         error_message = f"Unicode decode error: {e}"
         print(error_message)
         logger.error(error_message)
+    except Exception as e:
+        error_message = f"An unexpected error occurred: {e}"
+        print(error_message)
+        logger.error(error_message)
 
 # Main loop that calls the API every 30 seconds
 def main():
