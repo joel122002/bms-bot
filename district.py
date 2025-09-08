@@ -2,7 +2,7 @@ import time
 import json
 import subprocess
 from string import Template
-from utils import get_nested_value, extract_values_by_key, contains_substring, send_message, get_logger
+from utils import get_nested_value, extract_values_by_key, contains_substring, send_message, get_logger, error_handler
 
 # Get logger for this module
 logger = get_logger('district_bot')
@@ -29,18 +29,11 @@ def check_showtimes(dateCode):
             message = f"DateCode {dateCode} does not match."
             print(message)
             logger.info(message)
-    except subprocess.CalledProcessError as e:
-        error_message = f"Failed to execute curl command. Error: {e}"
-        print(error_message)
-        logger.error(error_message)
-    except UnicodeDecodeError as e:
-        error_message = f"Unicode decode error: {e}"
-        print(error_message)
-        logger.error(error_message)
     except Exception as e:
         error_message = f"An unexpected error occurred: {e}"
         print(error_message)
         logger.error(error_message)
+        error_handler()
 
 # Main loop that calls the API every 30 seconds
 def main():

@@ -1,12 +1,12 @@
 import requests
 import logging
 from logging.handlers import RotatingFileHandler
+import time
 
-# Function to send the message
-def send_message(dateCode):
+def send_notification(message):
     url = "https://jellyfinn.mooo.com/prod/send-to-user/joelv1202"
     message_data = {
-        "message": f"Tickets for {dateCode} are here"
+        "message": message
     }
     headers = {
         'Content-Type': 'application/json'
@@ -16,9 +16,13 @@ def send_message(dateCode):
     response = requests.post(url, json=message_data, headers=headers)
     
     if response.status_code == 204:
-        print(f"Message sent for {dateCode}.")
+        print("Notification sent.")
     else:
-        print(f"Failed to send message for {dateCode}.")
+        print("Failed to send notification.")
+
+# Function to send the message
+def send_message(dateCode):
+    send_notification(f"Tickets for {dateCode} are here")
 
 def get_nested_value(data, path):
     """
@@ -144,3 +148,18 @@ def get_logger(name):
         logger.addHandler(handler)
     
     return logger
+
+# Error tracking middleware
+error_timestamps = []
+ERROR_LIMIT = 5
+ERROR_WINDOW_SECONDS = 300  # 5 minutes
+
+def error_handler():
+    now = time.time()
+    # Remove timestamps older than 5 minutes
+    global error_timestamps
+    error_timestamps = [ts for ts in error_timestamps if now - ts < ERROR_WINDOW_SECONDS]
+    error_timestamps.append(now)
+    if len(error_timestamps) > ERROR_LIMIT:
+        alert_message = f"ALERT: More than {ERROR_LIMIT} errors in {ERROR_WINDOW_SECONDS//60} minutes!"
+        send_notification(alert_message)
