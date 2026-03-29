@@ -2,7 +2,17 @@ import time
 import json
 import subprocess
 from string import Template
-from utils import get_nested_value, extract_values_by_key, contains_substring, send_message, get_logger, error_handler
+from utils import (
+    get_nested_value, 
+    extract_values_by_key, 
+    contains_substring, 
+    send_message, 
+    get_logger, 
+    error_handler,
+    TitleSpecification,
+    DimensionSpecification,
+    AndSpecification
+)
 
 # Get logger for this module
 logger = get_logger('bms_bot')
@@ -18,16 +28,18 @@ def check_showtimes(dateCode):
         logger.info(f"{result.stdout}")
         
         data = json.loads(result.stdout)
-        movies = get_nested_value(data, ['ShowDetails', 0, 'Event'])
+        movies = get_nested_value(data, ['ShowDetails', 0, 'Event']) or []
         date = get_nested_value(data, ['ShowDetails', 0, 'Date'])
-        names = extract_values_by_key(movies, "EventTitle")
-        if contains_substring(names, "Slayer") and date == dateCode:
-            message = f"DateCode {dateCode} matches! Sending message..."
+        search_spec = TitleSpecification("Slayer") & DimensionSpecification("IMAX")
+        matching_movies = [m for m in movies if search_spec.is_satisfied_by(m)]
+        
+        if matching_movies and date == dateCode:
+            message = f"DateCode {dateCode} matches! Found {len(matching_movies)} matching movies. Sending message..."
             print(message)
             logger.info(message)
             send_message(dateCode)
         else:
-            message = f"DateCode {dateCode} does not match."
+            message = f"DateCode {dateCode} does not match (or no matching movies found)."
             print(message)
             logger.info(message)
     except Exception as e:

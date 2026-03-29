@@ -163,3 +163,60 @@ def error_handler():
     if len(error_timestamps) > ERROR_LIMIT:
         alert_message = f"ALERT: More than {ERROR_LIMIT} errors in {ERROR_WINDOW_SECONDS//60} minutes!"
         send_notification(alert_message)
+
+class Specification:
+    def is_satisfied_by(self, item):
+        raise NotImplementedError()
+
+    def __and__(self, other):
+        return AndSpecification(self, other)
+
+    def __or__(self, other):
+        return OrSpecification(self, other)
+
+class AndSpecification(Specification):
+    def __init__(self, spec1, spec2):
+        self.spec1 = spec1
+        self.spec2 = spec2
+
+    def is_satisfied_by(self, item):
+        return self.spec1.is_satisfied_by(item) and self.spec2.is_satisfied_by(item)
+
+class OrSpecification(Specification):
+    def __init__(self, spec1, spec2):
+        self.spec1 = spec1
+        self.spec2 = spec2
+
+    def is_satisfied_by(self, item):
+        return self.spec1.is_satisfied_by(item) or self.spec2.is_satisfied_by(item)
+
+class TitleSpecification(Specification):
+    def __init__(self, substring):
+        self.substring = substring.lower()
+
+    def is_satisfied_by(self, item):
+        if not isinstance(item, dict):
+            return False
+        title = item.get("EventTitle", "")
+        if not isinstance(title, str):
+            return False
+        return self.substring in title.lower()
+
+class DimensionSpecification(Specification):
+    def __init__(self, substring):
+        self.substring = substring.lower()
+
+    def is_satisfied_by(self, item):
+        if not isinstance(item, dict):
+            return False
+        child_events = item.get("ChildEvents", [])
+        if not isinstance(child_events, list):
+            return False
+            
+        for child in child_events:
+            if not isinstance(child, dict):
+                continue
+            dimension = child.get("EventDimension", "")
+            if isinstance(dimension, str) and self.substring in dimension.lower():
+                return True
+        return False
